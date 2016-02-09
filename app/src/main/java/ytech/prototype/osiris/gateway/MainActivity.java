@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,7 +50,9 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
     private SurfaceView mySurfaceView;
     private Camera myCamera; //hardware
     private static final String IMG_FILE_NAME = "camera_test.jpg";
-    private static final int quality = 50; //unit:percentage
+    private static final int quality = 75; //unit:percentage
+    float resizeScaleWidth = 320;
+    float resizeScaleHeight = 240;
 
     private SurfaceHolder.Callback callback = new SurfaceHolder.Callback() {
         @Override
@@ -152,6 +155,12 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
             String message = bundle.getString("message");
 
             Log.d("MainActivity", "receive push notify message:" + message);
+
+            if (myCamera != null) {
+                Log.d(TAG, "capture!");
+                myCamera.takePicture(null, null, mPictureListener);
+            }
+
         }
     };
 
@@ -169,20 +178,21 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
                         String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/cmr/" + IMG_FILE_NAME;
                         Log.d(TAG, "creating image...:" + filePath);
 
-                        /*
-                        FileOutputStream myFOS = null;
-                        try {
-                            myFOS = new FileOutputStream(filePath);
-                            myFOS.write(data);
-                            myFOS.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        */
-
                         try {
                             FileOutputStream out = null;
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            Bitmap tmp_bitmap  = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+                            // conversion
+                            int width = tmp_bitmap.getWidth();
+                            int height = tmp_bitmap.getHeight();
+                            float postWidthScale = resizeScaleWidth / (float)width;
+                            float postHeightScale = resizeScaleHeight / (float)height;
+
+                            Matrix matrix = new Matrix();
+                            matrix.postRotate (0);
+                            matrix.postScale(postWidthScale, postHeightScale);
+                            Bitmap bitmap = Bitmap.createBitmap (tmp_bitmap, 0, 0, width, height, matrix, true);
+
                             out = new FileOutputStream (filePath);
                             bitmap.compress (Bitmap.CompressFormat.JPEG, quality, out);
                             out.close ();
@@ -209,11 +219,7 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-
-            if (myCamera != null) {
-                Log.d(TAG, "flush!!!");
-                myCamera.takePicture(null, null, mPictureListener);
-            }
+            ; //no event about surface view touch event
         }
         return true;
     }
