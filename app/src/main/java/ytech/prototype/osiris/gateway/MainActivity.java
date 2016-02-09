@@ -1,8 +1,13 @@
 package ytech.prototype.osiris.gateway;
 
+import android.content.Context;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,10 +22,6 @@ import android.hardware.Camera;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import android.view.MotionEvent;
 import android.os.Environment;
@@ -28,16 +29,20 @@ import android.widget.Button;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 
 public class MainActivity extends AppCompatActivity implements HttpPostListener {
 
     // [Common]
     private static final String TAG = "MainActivity";
+
+    // [GCM]
+    private GoogleCloudMessaging gcm;
+    private Context context;
+    private UpdateReceiver upReceiver;
+    private IntentFilter intentFilter;
 
     // [Camera]
     private SurfaceView mySurfaceView;
@@ -81,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
         });
 
@@ -90,10 +95,22 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
         });
+
+        // [GCM]
+        context = getApplicationContext();
+        gcm = GoogleCloudMessaging.getInstance(this);
+        registerInBackground();
+
+        upReceiver = new UpdateReceiver();
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("UPDATE_ACTION");
+        registerReceiver(upReceiver, intentFilter);
+
+        upReceiver.registerHandler(updateHandler);
 
         // [Camera]
         mySurfaceView = (SurfaceView)findViewById(R.id.surfaceView1);
@@ -101,6 +118,41 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
         holder.addCallback(callback);
 
     }
+
+    // [GCM]
+    private void registerInBackground() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(context);
+                    }
+                    String regid = gcm.register("387907525646");
+                    msg = "Device registered, registration ID=" + regid;
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+            }
+        }.execute(null, null, null);
+    }
+
+    private Handler updateHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+
+            Bundle bundle = msg.getData();
+            String message = bundle.getString("message");
+
+            Log.d("MainActivity", "receive push notify message:" + message);
+        }
+    };
 
     // [Camera]
     private Camera.PictureCallback mPictureListener =
