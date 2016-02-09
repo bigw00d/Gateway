@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
     private Context context;
     private UpdateReceiver upReceiver;
     private IntentFilter intentFilter;
+    private static final String RESIST_ID = "387907525646";
 
     // [Camera]
     private SurfaceView mySurfaceView;
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
                     if (gcm == null) {
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
-                    String regid = gcm.register("387907525646");
+                    String regid = gcm.register(RESIST_ID);
                     msg = "Device registered, registration ID=" + regid;
                 } catch (IOException ex) {
                     msg = "Error :" + ex.getMessage();
