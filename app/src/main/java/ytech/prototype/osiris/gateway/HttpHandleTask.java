@@ -13,11 +13,15 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import android.os.AsyncTask;
@@ -197,6 +201,19 @@ public class HttpHandleTask extends AsyncTask<Void, Void, byte[]> {
         out.write(("Content-Disposition: form-data; name=\"name\"\r\n").getBytes(charset));
         out.write(("Content-Type: text/plain; charset=Shift_JIS\r\n\r\n").getBytes(charset));
         out.write((text).getBytes(charset));
+        out.write(("\r\n").getBytes(charset));
+
+        // テキストフィールド送信2
+        Log.d(TAG, "send text field2");
+        Date date = new Date();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyy/MM/dd,HH:mm:ss");
+        String text2 = sdformat.format(date);
+        // ファイルフィールド送信
+        Log.d(TAG, "date:" + text2);
+        out.write(("--" + boundary + "\r\n").getBytes(charset));
+        out.write(("Content-Disposition: form-data; name=\"pic_time\"\r\n").getBytes(charset));
+        out.write(("Content-Type: text/plain; charset=Shift_JIS\r\n\r\n").getBytes(charset));
+        out.write((text2).getBytes(charset));
         out.write(("\r\n").getBytes(charset));
 
         // ファイルフィールド送信
