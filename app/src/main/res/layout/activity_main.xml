@@ -31,13 +31,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_dialog_email" />
 
-    <Button
-        android:id="@+id/post_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_weight="1"
-        android:text="送信" />
+    <include layout="@layout/content_sub" />
 
     <SurfaceView
         android:id="@+id/surfaceView1"
