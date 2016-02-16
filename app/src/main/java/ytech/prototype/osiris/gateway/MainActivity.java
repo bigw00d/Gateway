@@ -410,6 +410,8 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
         }.execute(null, null, null);
     }
 
+    private String send_start_pattern = "message=shutter";
+
     private Handler updateHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -419,9 +421,15 @@ public class MainActivity extends AppCompatActivity implements HttpPostListener 
 
             Log.d("MainActivity", "receive push notify message:" + message);
 
-            if (myCamera != null) {
-                Log.d(TAG, "capture!");
-                myCamera.takePicture(null, null, mPictureListener);
+            if (message.indexOf(send_start_pattern) != -1) {
+                Log.d("MainActivity", "get send start pattern");
+                send();
+            }
+            else {
+                if (myCamera != null) {
+                    Log.d(TAG, "capture!");
+                    myCamera.takePicture(null, null, mPictureListener);
+                }
             }
 
         }
